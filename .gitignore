@@ -1,0 +1,12 @@
+# FOLDERS
+bin/
+CMakeFiles/
+.vscode
+
+
+# FILES
+Makefile
+CMakeCache.txt
+cmake_install.cmake
+*.a
+*.so
