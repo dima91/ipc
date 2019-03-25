@@ -17,3 +17,5 @@ link_directories	(${LIBS_DIRS})
 file (GLOB SRC_FILES src/*.cpp)
 
 add_library (${LIB_NAME} SHARED ${SRC_FILES})
+
+add_subdirectory (examples)
