@@ -9,6 +9,8 @@
 
 #define DEFAULT_BUF_LENGTH 2048
 
+#include <serializable.h>
+
 #include <cstdlib>
 #include <cstring>
 #include <sys/types.h>
@@ -40,78 +42,54 @@ namespace ipc {
 		void setNonBlocking ();
 		void setBufferLength (int length);
 
-		template <typename T>
-		void send (T *message, int bufLen=-1);
 
 		template <typename T>
-		void send (T *message, int *wroteBytes, int bufLen=-1);
-
-		template <typename T>
-		T *receive (int bufLen=-1);
-
-		template <typename T>
-		T *receive (int *readBytes, int bufLen=-1);
-	};
-
-
-
-
-	/* ================================================== */
-	/* ================  Implementation  ================ */
-
-	template <typename T>
-	void Socket::send (T *message, int bufLen=-1) {
-		if (bufLen == -1) {
-			bufLen	= sizeof (T);
+		void send (T *message, int bufLen=-1) {
+			if (bufLen == -1) {
+				bufLen	= sizeof (T);
+			}
+			::send (socketFD, message, bufLen, 0);
 		}
 
-		::send (socketFD, message, bufLen, 0);
-	}
 
 
-
-
-	template <typename T>
-	void Socket::send (T *message, int *wroteBytes, int bufLen=-1) {
-		if (bufLen == -1) {
-			bufLen	= sizeof (T);
+		template <typename T>
+		void send (T *message, int *wroteBytes, int bufLen=-1) {
+			if (bufLen == -1) {
+				bufLen	= sizeof (T);
+			}
+			*wroteBytes	= ::send (socketFD, message, bufLen, 0);
 		}
 
-		*wroteBytes	= ::send (socketFD, message, bufLen, 0);
-	}
 
 
+		template <typename T>
+		T *receive (int bufLen=-1) {
+			if (bufLen == -1)
+				bufLen	= sizeof (T);
 
+			void *recvBuf	= (void *) malloc (bufLen);
+			bzero (recvBuf, bufLen);
 
-	template <typename T>
-	T *Socket::receive (int bufLen=-1) {
-		if (bufLen == -1)
-			bufLen	= sizeof (T);
+			if (::recv (socketFD, recvBuf, bufLen, 0) <= 0)
+				return nullptr;
+			else
+				return (T*) recvBuf;
+		}
 
-		void *recvBuf	= (void *) malloc (bufLen);
-		bzero (recvBuf, bufLen);
+		template <typename T>
+		T *receive (int *readBytes, int bufLen=-1) {
+			if (bufLen == -1)
+				bufLen	= sizeof (T);
 
-		if (::recv (socketFD, recvBuf, bufLen, 0) <= 0)
-			return nullptr;
-		else
+			void *recvBuf	= (void *) malloc (bufLen);
+			bzero (recvBuf, bufLen);
+
+			*readBytes	= recv (socketFD, recvBuf, bufLen, 0);
+
 			return (T*) recvBuf;
-	}
-
-
-
-
-	template <typename T>
-	T *Socket::receive (int *readBytes, int bufLen=-1) {
-		if (bufLen == -1)
-			bufLen	= sizeof (T);
-
-		void *recvBuf	= (void *) malloc (bufLen);
-		bzero (recvBuf, bufLen);
-
-		*readBytes	= recv (socketFD, recvBuf, bufLen, 0);
-
-		return (T*) recvBuf;
-	}
+		}
+	};
 }
 
 
