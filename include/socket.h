@@ -9,8 +9,6 @@
 
 #define DEFAULT_BUF_LENGTH 2048
 
-#include <serializable.h>
-
 #include <cstdlib>
 #include <cstring>
 #include <sys/types.h>
