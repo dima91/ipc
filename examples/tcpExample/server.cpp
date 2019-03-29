@@ -23,7 +23,10 @@ int main (int argn, char **argv) {
 	Socket *client	= server.accept ();
 
 	client->send<const char> (sendMe.c_str(), (int) sendMe.length());
-	cout << "Client says:\t" << client->receive<char> (1024) << endl;
+	char *message	= client->receive<char> (1024);
+	cout << "Client says:\t" << message << endl;
+
+	free (message);
 
 	delete (client);
 

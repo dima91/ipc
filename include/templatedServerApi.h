@@ -11,7 +11,7 @@
 #define SOCKET_SLEEP_DELAY 50				// Number of milliseconds to sleep after reading from socket
 
 
-#include <ipc/serverInterface.h>
+#include <serverInterface.h>
 
 #include <functional>
 #include <map>
@@ -45,7 +45,7 @@ namespace ipc {
 			while (!haltMe) {
 				clientSocket	= serverInterface.accept ();
 				if (clientSocket != nullptr) {
-					clients.push_back (std::thread ([this, clientSocket]() {clientHandler(clientSocket);}));
+					clients.push_back (std::thread ([this](ipc::Socket *clientSocket) {clientHandler(clientSocket);}, clientSocket));
 				}
 
 				usleep (SOCKET_SLEEP_DELAY * 1000);
@@ -68,13 +68,15 @@ namespace ipc {
 				else {
 					auto element	= reqResHandlersMap.find(*reqOp);
 					if (element != reqResHandlersMap.end()) {
-						std::cout << "[clientHandler]  Found operation:  " << *reqOp << std::endl;
+						//std::cout << "[clientHandler]  Found operation:  " << *reqOp << std::endl;
 						element->second (*clientSocket);
 					}
 					else {
 						std::cerr << "[clientHandler]  Wrong requested operation! (" << *reqOp << ")\n";
 					}
 				}
+
+				free (reqOp);
 
 				usleep (SOCKET_SLEEP_DELAY * 1000);
 			}
@@ -133,6 +135,9 @@ namespace ipc {
 					std::cerr << "EXCEP -->  " << e.what() << std::endl;
 				}
 				client.send<RES_T> (&res);
+
+				delete (req);
+				delete (localCB);
 			});
 		}
 
@@ -156,6 +161,9 @@ namespace ipc {
 					std::cerr << "EXCEP -->  " << e.what() << std::endl;
 				}
 				client.send<REQ_RES_T> (&reqRes);
+
+				delete (reqRes);
+				delete (localCB);
 			});
 		}
 

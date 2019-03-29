@@ -24,10 +24,11 @@ int main (int argn, char **argv) {
 	char chars[20] = "Hello client!";
 	std::string endp = "127.0.0.1";
 
-	UdpSocket::ClientMessage<char> message;
-
-	cout << "Client says:  " << get<2> (server.receive<char> (1024)) << endl;
+	UdpSocket::ClientMessage<char> message	= server.receive<char> (1024);
+	cout << "Client says:  " << get<2> (message) << endl;
 	server.send<char> (endp, 8899, chars, strlen (chars));
+
+	free (get<2>(message));
 
 
 	return 0;

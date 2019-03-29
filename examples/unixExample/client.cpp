@@ -21,8 +21,12 @@ int main (int argn, char **argv) {
 	string sendMe	= "Hello server!";
 	UnixClient client ("/home/luca/tester.socket");
 
-	cout << "Server says:\t" << client.receive<char> (1024) << endl;
+
+	char *message	= client.receive<char> (1024);
+	cout << "Server says:\t" << message << endl;
 	client.send<const char> (sendMe.c_str(), sendMe.length());
+
+	free (message);
 
 
 	return 0;

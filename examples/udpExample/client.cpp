@@ -26,7 +26,10 @@ int main (int argn, char **argv) {
 	UdpSocket::ClientMessage<char> message;
 
 	client.send<const char> (endp, 8800, sendMe.c_str(), (int) sendMe.length());
-	cout << "Server says:\t" << get<2> (client.receive<char> (1024)) << endl;
+	message	= client.receive<char> (1024);
+	cout << "Server says:\t" << get<2> (message) << endl;
+
+	free (get<2> (message));
 
 
 	return 0;
