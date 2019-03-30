@@ -36,8 +36,16 @@ file (GLOB SRC_FILES src/*.cpp)
 
 add_library (${LIB_NAME} SHARED ${SRC_FILES})
 
+
+### EXAMPLES
 subdirlist (EXAMPLES ./examples)
 foreach (EXAMPLE ${EXAMPLES})
 	message ("-----  Including this example: " ${EXAMPLE})
 	add_subdirectory (${EXAMPLE})
 endforeach ()
+
+
+### TESTS
+include_directories (tests)
+add_executable (Tester tests/main.cpp)
+target_link_libraries (Tester ipc pthread)
