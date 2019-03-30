@@ -7,12 +7,20 @@
 #ifndef SOCKET_H
 #define SOCKET_H
 
-#define DEFAULT_BUF_LENGTH 2048
-
 #include <cstdlib>
 #include <cstring>
+#include <stdexcept>
 #include <sys/types.h>
 #include <sys/socket.h>
+
+
+#define THROW_ERROR(prevMessage) {\
+	int localErrno				= errno;\
+	std::string errorMessage	= prevMessage;\
+	errorMessage += ":    ";\
+	errorMessage += strerror(localErrno);\
+	throw std::runtime_error (errorMessage);\
+}
 
 
 namespace ipc {
@@ -24,7 +32,6 @@ namespace ipc {
 	class Socket {
 	private:
 		int socketFD;
-		int bufLen;
 
 
 	protected:
@@ -38,7 +45,6 @@ namespace ipc {
 
 		void setBlocking ();
 		void setNonBlocking ();
-		void setBufferLength (int length);
 
 
 		template <typename T>
@@ -46,7 +52,8 @@ namespace ipc {
 			if (bufLen == -1) {
 				bufLen	= sizeof (T);
 			}
-			::send (socketFD, message, bufLen, 0);
+			if (::send (socketFD, message, bufLen, 0) < 0 )
+				THROW_ERROR ("Error sending message")
 		}
 
 
@@ -56,7 +63,8 @@ namespace ipc {
 			if (bufLen == -1) {
 				bufLen	= sizeof (T);
 			}
-			*wroteBytes	= ::send (socketFD, message, bufLen, 0);
+			if (*wroteBytes	= ::send (socketFD, message, bufLen, 0) < 0 )
+				THROW_ERROR ("Error sending message")
 		}
 
 
@@ -72,7 +80,7 @@ namespace ipc {
 			if (::recv (socketFD, recvBuf, bufLen, 0) <= 0)
 				return nullptr;
 			else
-				return (T*) recvBuf;
+				return static_cast<T*> (recvBuf);
 		}
 
 		template <typename T>
@@ -85,7 +93,7 @@ namespace ipc {
 
 			*readBytes	= recv (socketFD, recvBuf, bufLen, 0);
 
-			return (T*) recvBuf;
+			return static_cast<T*> (recvBuf);
 		}
 	};
 }

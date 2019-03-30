@@ -11,7 +11,6 @@
 #include <csignal>
 #include <unistd.h>
 #include <fcntl.h>
-#include <iostream> // TODO Remove me
 
 
 
@@ -28,21 +27,15 @@ ipc::UnixServer::UnixServer (std::string path) {
 
 	socketFD	= socket (AF_UNIX, SOCK_STREAM, 0);
 	if (socketFD < 0) {
-		//std::cerr << "sockDesc :  " << socketDescriptor << std::endl;
-		// TODO Throw an exception
-		return ;
+		THROW_ERROR ("Error creating socket");
 	}
 
 	if ((bind (socketFD, (struct sockaddr *) &socketAddr, sizeof (socketAddr)))==-1) {
-		//std::cerr << "cannot bind!" << std::endl;
-		// TODO Throw an exception
-		return ;
+		THROW_ERROR ("Error binding socket with given path");
 	}
 
 	if ((listen (socketFD, SOMAXCONN))==-1) {
-		//std::cerr << "Cannot listen!!!" << std::endl;
-		// TODO Throw an exception
-		return ;
+		THROW_ERROR ("Error listening for new connections");
 	}
 
 	// Ignoring SIGPIPE signal due to a socket error (disconnection)
@@ -64,12 +57,19 @@ ipc::UnixServer::~UnixServer () {
 
 
 ipc::Socket *ipc::UnixServer::accept () {
-	int clientDescriptor	= ::accept (socketFD, nullptr, 0);
+	int tmpFD	= -1;
 
-	if (clientDescriptor == -1)
-		return nullptr;	// FIXME Do I throw an exception..?
+	if ((tmpFD = ::accept (socketFD, nullptr, 0)) < 0) {
+		if (errno==EAGAIN || errno==EWOULDBLOCK) {
+			return nullptr;
+		}
+		else {
+			validity	= false;
+			THROW_ERROR ("Error accepting new connection");
+		}
+	}
 
-	Socket *clientSocket	= new Socket (clientDescriptor);
+	Socket *clientSocket	= new Socket (tmpFD);
 
 	return clientSocket;
 }
@@ -81,17 +81,13 @@ void ipc::UnixServer::setBlocking () {
 	int opts	= 0;
 
 	if ((opts = fcntl(socketFD, F_GETFL)) < 0) {
-		//std::cerr << "setNonBlocking: Cannot get sock information (LinuxServer::setNonBlocking)\n";
-		// TODO Throw an exception
-		return;
+		THROW_ERROR ("Error getting socket information");
 	}
 
 	opts	= (opts | ~O_NONBLOCK);
 
 	if ((fcntl(socketFD, F_SETFL, opts)) < 0) {
-		//std::cerr << "setNonBlocking: Cannot set non-blocking socket (LinuxServer::setNonBlocking)\n";
-		// TODO Throw an exception
-		return ;
+		THROW_ERROR ("Error setting blocking socket");
 	}
 }
 
@@ -102,17 +98,13 @@ void ipc::UnixServer::setNonBlocking () {
 	int opts	= 0;
 
 	if ((opts = fcntl(socketFD, F_GETFL)) < 0) {
-		//std::cerr << "setNonBlocking: Cannot get sock information (LinuxServer::setNonBlocking)\n";
-		// TODO Throw an exception
-		return;
+		THROW_ERROR ("Error getting socket information");
 	}
 
 	opts	= (opts | O_NONBLOCK);
 
 	if ((fcntl(socketFD, F_SETFL, opts)) < 0) {
-		//std::cerr << "setNonBlocking: Cannot set non-blocking socket (LinuxServer::setNonBlocking)\n";
-		// TODO Throw an exception
-		return ;
+		THROW_ERROR ("Error setting non-blocking socket");
 	}
 }
 

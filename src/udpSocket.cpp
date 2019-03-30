@@ -31,9 +31,7 @@ ipc::UdpSocket::UdpSocket (int port) {
 	serverSockAddr.sin_port			= htons(port);
 
 	if ((bind (socketFD, (struct sockaddr *) &serverSockAddr, sizeof(serverSockAddr))) < 0) {
-		// TODO Throw exception
-		validity	= false;
-		return ;
+		THROW_ERROR ("Error binding UDP socket");
 	}
 
 	// Ignoring SIGPIPE signal due to a socket error (disconnection)
@@ -57,17 +55,13 @@ void ipc::UdpSocket::setBlocking () {
 	int opts	= 0;
 
 	if ((opts = fcntl(socketFD, F_GETFL)) < 0) {
-		//std::cerr << "setNonBlocking: Cannot get sock information (LinuxSocket::setBlocking)\n";
-		// TODO Throw an exception
-		return;
+		THROW_ERROR ("Error getting socket information");
 	}
 
 	opts	= opts & (~O_NONBLOCK);
 
 	if ((fcntl(socketFD, F_SETFL, opts)) < 0) {
-		//std::cerr << "setNonBlocking: Cannot set non-blocking socket (LinuxSocket::setBlocking)\n";
-		// TODO Throw an exception
-		return ;
+		THROW_ERROR ("Error setting blocking socket");
 	}
 }
 
@@ -78,16 +72,12 @@ void ipc::UdpSocket::setNonBlocking () {
 	int opts	= 0;
 
 	if ((opts = fcntl(socketFD, F_GETFL)) < 0) {
-		//std::cerr << "setNonBlocking: Cannot get sock information (LinuxSocket::setNonBlocking)\n";
-		// TODO Throw an exception
-		return;
+		THROW_ERROR ("Error getting socket information");
 	}
 
 	opts	= (opts | O_NONBLOCK);
 
 	if ((fcntl(socketFD, F_SETFL, opts)) < 0) {
-		//std::cerr << "setNonBlocking: Cannot set non-blocking socket (LinuxSocket::setNonBlocking)\n";
-		// TODO Throw an exception
-		return ;
+		THROW_ERROR ("Error setting non-blocking socket");
 	}
 }

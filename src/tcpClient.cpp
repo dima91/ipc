@@ -20,13 +20,12 @@ ipc::TcpClient::TcpClient (std::string endpoint, int port) {
 
 	socketFD	= socket (AF_INET, SOCK_STREAM, 0);
 	if (socketFD < 0) {
-		// TODO Throw exception
-		return ;
+		THROW_ERROR ("Error creating new socket");
 	}
 
 	serverName	= gethostbyname (endpoint.c_str());
 	if (serverName == nullptr) {
-		// TODO Throw an exception
+		THROW_ERROR ("Error getting server hostname");
 		return ;
 	}
 
@@ -35,7 +34,7 @@ ipc::TcpClient::TcpClient (std::string endpoint, int port) {
 	memcpy(&serverAddr.sin_addr, serverName->h_addr_list[0], serverName->h_length);
 
 	if (::connect (socketFD, (struct sockaddr *) &serverAddr, sizeof(serverAddr)) < 0) {
-		// TODO Throw exception
+		THROW_ERROR ("Error connecting to socket");
 		return ;
 	}
 
@@ -46,5 +45,5 @@ ipc::TcpClient::TcpClient (std::string endpoint, int port) {
 
 
 ipc::TcpClient::~TcpClient () {
-	// TODO
+	// Do nothing
 }

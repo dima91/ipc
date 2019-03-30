@@ -23,13 +23,11 @@ ipc::UnixClient::UnixClient (std::string path) {
 
 	socketFD	= socket (AF_UNIX, SOCK_STREAM, 0);
 	if (socketFD < 0) {
-		// TODO Throw an error
-		return ;
+		THROW_ERROR ("Error creating socket");
 	}
 
 	if (connect (socketFD, (struct sockaddr *) &serverAddr, sizeof (serverAddr))==-1) {
-		// TODO Throw an error
-		return ;
+		THROW_ERROR ("Error connecting to server socket");
 	}
 
 	setSocketDescriptor (socketFD);
@@ -39,5 +37,5 @@ ipc::UnixClient::UnixClient (std::string path) {
 
 
 ipc::UnixClient::~UnixClient () {
-	// TODO
+	// Do nothing
 }
