@@ -28,8 +28,9 @@ int main (int argn, char **argv) {
 		res.b	= 'b';
 	});
 
-	serverApi->addOperation<ReqResOp3, ReqResOp3> (OP_3, [](ReqResOp3 &req, ReqResOp3 &res){
+	serverApi->addOperation<ReqResOp3, ReqResOp3> (OP_3, [serverApi](ReqResOp3 &req, ReqResOp3 &res){
 		res.v	= 'v';
+		serverApi->stopMe ();
 	});
 
 
